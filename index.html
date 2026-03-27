@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HealthGrid — Hospital Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#f5f3ef;--surface:#ffffff;--surface2:#f9f8f6;
+  --border:#e4e1da;--border2:#ccc9c0;
+  --navy:#0f1f3d;--teal:#0d8c72;--teal-lt:#e6f5f1;--teal-md:#b3e0d6;
+  --amber:#d97706;--amber-lt:#fef3c7;
+  --red:#dc2626;--red-lt:#fee2e2;
+  --blue:#1d4ed8;--blue-lt:#dbeafe;
+  --text:#1a1a2e;--muted:#6b6b80;--muted2:#9b9baa;
+  --radius:12px;--shadow:0 2px 12px rgba(15,31,61,.08);--shadow-lg:0 8px 40px rgba(15,31,61,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+h1,h2,h3,h4{font-family:'Playfair Display',serif;line-height:1.2}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.navbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(15,31,61,.3)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff}
+.nav-logo span{color:#4dd9bc}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.role-tag{font-size:.7rem;font-weight:600;padding:.2rem .7rem;border-radius:99px;text-transform:uppercase;letter-spacing:.06em}
+.role-tag.super{background:#4dd9bc;color:#0f1f3d}
+.role-tag.hadmin{background:#60a5fa;color:#0f1f3d}
+.role-tag.user{background:#f9a8d4;color:#0f1f3d}
+.main{flex:1;padding:2rem;max-width:1280px;margin:0 auto;width:100%}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.25rem;border-radius:8px;font-size:.875rem;font-weight:500;border:none;cursor:pointer;transition:all .18s;font-family:'Outfit',sans-serif;white-space:nowrap}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:#0a7a62;transform:translateY(-1px);box-shadow:0 4px 14px rgba(13,140,114,.35)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:#182f5a;transform:translateY(-1px)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:#b91c1c}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:.35rem .85rem;font-size:.8rem}
+.btn-lg{padding:.75rem 2rem;font-size:1rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
+label{font-size:.75rem;color:var(--muted);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+input,select,textarea{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.6rem .9rem;border-radius:8px;font-size:.9rem;font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,140,114,.12)}
+input::placeholder,textarea::placeholder{color:var(--muted2)}
+textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:560px){.form-row{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s}
+.card:hover{box-shadow:var(--shadow-lg);border-color:var(--border2)}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1.25rem}
+.overlay{position:fixed;inset:0;background:rgba(15,31,61,.55);backdrop-filter:blur(3px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:18px;padding:2rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+.modal-header h2{font-size:1.35rem}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--muted);padding:.2rem;line-height:1}
+.modal-footer{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.page-title{font-size:1.75rem;color:var(--navy)}
+.page-sub{color:var(--muted);font-size:.9rem;margin-top:.2rem;font-family:'Outfit',sans-serif;font-weight:400}
+.empty{text-align:center;padding:5rem 2rem;display:flex;flex-direction:column;align-items:center;gap:1rem}
+.empty-icon{font-size:3.5rem;opacity:.25}
+.empty h3{font-size:1.3rem;color:var(--muted)}
+.empty p{color:var(--muted2);font-size:.875rem;max-width:340px;line-height:1.7}
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .75rem;border-radius:99px;font-size:.75rem;font-weight:600;letter-spacing:.02em}
+.badge-teal{background:var(--teal-lt);color:var(--teal);border:1px solid var(--teal-md)}
+.badge-amber{background:var(--amber-lt);color:var(--amber);border:1px solid #fcd34d}
+.badge-red{background:var(--red-lt);color:var(--red);border:1px solid #fca5a5}
+.badge-blue{background:var(--blue-lt);color:var(--blue);border:1px solid #93c5fd}
+.badge-navy{background:#e8edf7;color:var(--navy);border:1px solid #c7d2e8}
+.alert{padding:.7rem 1rem;border-radius:8px;font-size:.875rem;margin-bottom:.9rem;border:1px solid;display:flex;align-items:center;gap:.5rem}
+.alert-err{background:var(--red-lt);border-color:#fca5a5;color:var(--red)}
+.alert-ok{background:var(--teal-lt);border-color:var(--teal-md);color:var(--teal)}
+.alert-info{background:var(--blue-lt);border-color:#93c5fd;color:var(--blue)}
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto;background:var(--surface)}
+table{width:100%;border-collapse:collapse}
+th{background:var(--surface2);padding:.7rem 1rem;text-align:left;font-size:.72rem;color:var(--muted);font-weight:600;letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:.8rem 1rem;border-bottom:1px solid var(--border);font-size:.875rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;box-shadow:var(--shadow)}
+.stat-val{font-family:'Playfair Display',serif;font-size:2rem;color:var(--navy)}
+.stat-lbl{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+.search-wrap{position:relative;max-width:320px}
+.search-wrap input{padding-left:2.4rem}
+.search-ico{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none}
+.tabs{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.3rem;margin-bottom:2rem;flex-wrap:wrap;gap:.3rem}
+.tab{flex:1;min-width:110px;padding:.55rem 1rem;text-align:center;border-radius:8px;cursor:pointer;font-size:.875rem;font-weight:500;transition:all .2s;color:var(--muted);border:none;background:transparent;font-family:'Outfit',sans-serif}
+.tab.active{background:var(--surface);color:var(--navy);box-shadow:var(--shadow);font-weight:600}
+.divider{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.spec-chip{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .7rem;border-radius:99px;font-size:.78rem;font-weight:500;background:var(--surface2);border:1px solid var(--border2);color:var(--navy)}
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--navy);color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.875rem;box-shadow:var(--shadow-lg);animation:slideUp .2s ease;max-width:320px;display:flex;align-items:center;gap:.6rem}
+.toast.ok{background:var(--teal)}
+.toast.err{background:var(--red)}
+.login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);background-image:radial-gradient(ellipse at 30% 70%,rgba(13,140,114,.07) 0%,transparent 55%),radial-gradient(ellipse at 80% 10%,rgba(15,31,61,.05) 0%,transparent 55%)}
+.login-wrap{width:100%;max-width:440px;padding:1rem}
+.login-brand{text-align:center;margin-bottom:2.5rem}
+.login-brand h1{font-family:'Playfair Display',serif;font-size:2.4rem;color:var(--navy)}
+.login-brand h1 span{color:var(--teal)}
+.login-brand p{color:var(--muted);font-size:.9rem;margin-top:.3rem}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:2rem;box-shadow:var(--shadow-lg)}
+.doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow);transition:box-shadow .2s}
+.doc-card:hover{box-shadow:var(--shadow-lg)}
+.doc-avatar{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:.75rem}
+.doc-name{font-weight:600;font-size:.95rem;margin-bottom:.3rem;color:var(--navy)}
+.doc-timing{color:var(--muted);font-size:.8rem;display:flex;align-items:center;gap:.3rem;margin-top:.4rem}
+.filter-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.fchip{padding:.3rem .85rem;border-radius:99px;font-size:.78rem;font-weight:500;cursor:pointer;border:1.5px solid var(--border2);background:var(--surface);color:var(--muted);transition:all .18s}
+.fchip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.fchip:hover:not(.on){border-color:var(--navy);color:var(--navy)}
+.back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.875rem;cursor:pointer;margin-bottom:1.5rem}
+.back:hover{color:var(--navy)}
+@media(max-width:640px){.main{padding:1rem}.navbar{padding:0 1rem}.page-header{flex-direction:column}.stats{grid-template-columns:repeat(2,1fr)}.card-grid{grid-template-columns:1fr}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fade-in{animation:fadeIn .25s ease}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+
+/* ═══════════════════════════════════════════════════════════════
+   SUPABASE DATABASE LAYER
+   ▸ Uses Supabase REST API — pure fetch(), zero SDK needed.
+   ▸ Stores everything in one row of a single "appdata" table.
+   ▸ All devices sync by reading/writing that same row.
+   ▸ localStorage = instant offline cache + fallback.
+   ▸ Polls every 10s to keep all devices in sync.
+═══════════════════════════════════════════════════════════════ */
+
+const LC = {
+  get:(k,d)=>{ try{ const v=localStorage.getItem('hg_'+k); return v==null?d:JSON.parse(v); }catch{return d;} },
+  set:(k,v)=>{ try{ localStorage.setItem('hg_'+k,JSON.stringify(v)); }catch{} },
+  del:(k)=>localStorage.removeItem('hg_'+k),
+};
+
+// ── Pre-configured Supabase credentials — works on every device instantly
+const SB_URL = 'https://icquxdiwlkyygajmvtwv.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljcXV4ZGl3bGt5eWdham12dHd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODI2NzcsImV4cCI6MjA4OTc1ODY3N30.Nx0pLpDPawSyjg7eOz9JyRg6OYu4_XAz3SjKm-qnOWw';
+
+const CFG = {
+  getUrl:  ()=>SB_URL,
+  getKey:  ()=>SB_KEY,
+  set:     ()=>{},
+  clear:   ()=>{},
+  ready:   ()=>true,
+};
+
+/* Supabase REST helpers — pure fetch */
+const SB = {
+  headers(){
+    return {
+      'Content-Type':  'application/json',
+      'apikey':        CFG.getKey(),
+      'Authorization': 'Bearer '+CFG.getKey(),
+      'Prefer':        'return=representation',
+    };
+  },
+
+  /* Read the single app-data row */
+  async read(){
+    try{
+      const r = await fetch(
+        CFG.getUrl()+'/rest/v1/appdata?id=eq.1&select=payload',
+        { headers: SB.headers() }
+      );
+      if(!r.ok) return null;
+      const rows = await r.json();
+      if(!rows || !rows.length) return {};
+      return rows[0].payload || {};
+    }catch(e){ return null; }
+  },
+
+  /* Upsert (insert or update) the single app-data row */
+  async write(payload){
+    try{
+      // First try PATCH (update existing row)
+      const r = await fetch(
+        CFG.getUrl()+'/rest/v1/appdata?id=eq.1',
+        {
+          method:  'PATCH',
+          headers: { ...SB.headers(), 'Prefer': 'return=minimal' },
+          body:    JSON.stringify({ payload }),
+        }
+      );
+      if(r.ok || r.status===204) return true;
+      // If PATCH fails, try POST (insert)
+      const r2 = await fetch(
+        CFG.getUrl()+'/rest/v1/appdata',
+        {
+          method:  'POST',
+          headers: { ...SB.headers(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+          body:    JSON.stringify({ id:1, payload }),
+        }
+      );
+      return r2.ok || r2.status===201 || r2.status===204;
+    }catch(e){ return false; }
+  },
+
+  /* Test credentials by doing a read */
+  async test(){
+    try{
+      const r = await fetch(
+        CFG.getUrl()+'/rest/v1/appdata?select=id&limit=1',
+        { headers: SB.headers() }
+      );
+      return r.ok;
+    }catch(e){ return false; }
+  },
+};
+
+/* In-memory store */
+let MEM = { hospitals:[], notifications:[], stars:[] };
+let _pollTimer = null;
+let _onLiveUpdate = null;
+
+const DB = {
+  async load(){
+    if(!CFG.ready()) return false;
+    const data = await SB.read();
+    if(data===null) return false;
+    MEM.hospitals     = data.hospitals     || [];
+    MEM.notifications = data.notifications || [];
+    MEM.stars         = data.stars         || [];
+    LC.set('cache', data);
+    return true;
+  },
+
+  async push(){
+    if(!CFG.ready()) return false;
+    const data = { hospitals:MEM.hospitals, notifications:MEM.notifications, stars:MEM.stars };
+    LC.set('cache', data);
+    return SB.write(data);
+  },
+
+  loadCache(){
+    const d = LC.get('cache',null);
+    if(d){
+      MEM.hospitals     = d.hospitals     || [];
+      MEM.notifications = d.notifications || [];
+      MEM.stars         = d.stars         || [];
+    }
+  },
+
+  async connect(onUpdate){
+    if(!CFG.ready()) return false;
+    _onLiveUpdate = onUpdate;
+    const ok = await DB.load();
+    if(onUpdate) onUpdate({...MEM}); // always trigger re-render on connect
+    clearInterval(_pollTimer);
+    // Poll every 5 seconds — always trigger re-render so components pick up changes
+    _pollTimer = setInterval(async()=>{
+      const ok2 = await DB.load();
+      if(ok2 && _onLiveUpdate) _onLiveUpdate({...MEM}); // always push fresh data to React
+    }, 5000);
+    return ok;
+  },
+
+  stopPolling(){ clearInterval(_pollTimer); },
+  get(k,def=[]){ return MEM[k]??def; },
+  set(k,v){ MEM[k]=v; DB.push(); },
+  isConfigured: ()=>CFG.ready(),
+};
+
+const SUPER = { username:'Superadmin', password:'Super@12345' };
+const uid = ()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const fmtT = t=>{ if(!t)return '—'; const[h,m]=t.split(':'); const hh=+h; return`${hh%12||12}:${m} ${hh<12?'AM':'PM'}`; };
+const fmtDocTime = d => {
+  if(d.startHr) return `${d.startHr}:${d.startMin||'00'} ${d.startAmPm||'AM'} – ${d.endHr}:${d.endMin||'00'} ${d.endAmPm||'PM'}`;
+  return fmtT(d.start)+' – '+fmtT(d.end);
+};
+const fmtDocDays = d => Array.isArray(d.days) ? (d.days.length ? d.days.map(x=>x.slice(0,3)).join(', ') : '—') : (d.days||'—');
+const genderIcon = g => g==='Female'?'👩‍⚕️':g==='Male'?'👨‍⚕️':'🧑‍⚕️';
+
+const SPECS=['Cardiologist','Neurologist','Orthopedic','Dermatologist','Pediatrician','Gynecologist','Oncologist','Psychiatrist','Radiologist','General Physician','ENT Specialist','Ophthalmologist','Urologist','Gastroenterologist','Endocrinologist','Pulmonologist','Dentist','Anesthesiologist'];
+const SC={'Cardiologist':'#ef4444','Neurologist':'#8b5cf6','Orthopedic':'#3b82f6','Dermatologist':'#f59e0b','Pediatrician':'#10b981','Gynecologist':'#ec4899','Oncologist':'#f97316','Psychiatrist':'#84cc16','Radiologist':'#06b6d4','General Physician':'#0d8c72','ENT Specialist':'#a855f7','Ophthalmologist':'#14b8a6','Urologist':'#65a30d','Gastroenterologist':'#db2777','Endocrinologist':'#2563eb','Pulmonologist':'#ea580c','Dentist':'#0891b2','Anesthesiologist':'#7c3aed'};
+const SI={'Cardiologist':'🫀','Neurologist':'🧠','Orthopedic':'🦴','Dermatologist':'🔬','Pediatrician':'👶','Gynecologist':'🌸','Oncologist':'🎗️','Psychiatrist':'💆','Radiologist':'📷','General Physician':'🩺','ENT Specialist':'👂','Ophthalmologist':'👁️','Urologist':'💊','Gastroenterologist':'🩻','Endocrinologist':'⚗️','Pulmonologist':'🫁','Dentist':'🦷','Anesthesiologist':'💉'};
+
+function useToast(){
+  const[ts,setTs]=useState([]);
+  const add=useCallback((msg,type='',icon='ℹ️')=>{
+    const id=uid(); setTs(p=>[...p,{id,msg,type,icon}]);
+    setTimeout(()=>setTs(p=>p.filter(t=>t.id!==id)),3500);
+  },[]);
+  return{ts,toast:add};
+}
+
+function Toasts({ts}){
+  return <div className="toast-container">{ts.map(t=><div key={t.id} className={`toast ${t.type}`}>{t.icon} {t.msg}</div>)}</div>;
+}
+
+function Modal({title,onClose,children,footer}){
+  return <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div className="modal fade-in">
+      <div className="modal-header"><h2>{title}</h2><button className="modal-close" onClick={onClose}>✕</button></div>
+      {children}
+      {footer&&<div className="modal-footer">{footer}</div>}
+    </div>
+  </div>;
+}
+
+function SpecBadge({spec}){
+  const c=SC[spec]||'#6b6b80';
+  return <span className="spec-chip" style={{background:c+'18',borderColor:c+'44',color:c}}>{SI[spec]||'🏥'} {spec}</span>;
+}
+
+/* ── LOGIN ─────────────────────────────── */
+function LoginPage({onLogin}){
+  const[role,setRole]=useState('public');
+  const[f,setF]=useState({u:'',p:''});
+  const[err,setErr]=useState('');
+
+  const go=()=>{
+    setErr('');
+    if(role==='super'){
+      if(f.u===SUPER.username&&f.p===SUPER.password) onLogin({role:'super',name:'Super Admin'});
+      else setErr('Invalid credentials. Use superadmin / Super@123');
+    } else if(role==='hadmin'){
+      if(!f.u||!f.p){setErr('Enter username and password.');return;}
+      const hs=DB.get('hospitals',[]);
+      const h=hs.find(x=>x.adminUser===f.u.trim());
+      if(!h){setErr('No admin account found.');return;}
+      if(h.adminPass!==f.p){setErr('Wrong password.');return;}
+      if(h.status==='pending'){setErr('Your registration is pending Super Admin approval.');return;}
+      if(h.status==='rejected'){setErr('Registration rejected: '+(h.rejectReason||'Contact support.'));return;}
+      onLogin({role:'hadmin',name:h.adminName,hid:h.id});
+    } else {
+      onLogin({role:'user',name:'Guest'});
+    }
+  };
+
+  return <div className="login-page">
+    <div className="login-wrap fade-in">
+      <div className="login-brand"><h1>Health<span>Grid</span></h1><p>Hospital Management System</p></div>
+      <div className="login-card">
+        <div className="tabs" style={{marginBottom:'1.5rem'}}>
+          {[['public','🌐 Public'],['hadmin','🏥 Hospital Admin'],['super','🔐 Super Admin']].map(([r,l])=>
+            <button key={r} className={`tab ${role===r?'active':''}`} onClick={()=>{setRole(r);setErr('')}}>{l}</button>)}
+        </div>
+        {err&&<div className="alert alert-err">⚠️ {err}</div>}
+        {role==='public'&&<>
+          <div className="alert alert-info">👋 Browse hospitals without an account.</div>
+          <button className="btn btn-primary btn-lg" style={{width:'100%',justifyContent:'center'}} onClick={go}>Continue as Guest →</button>
+        </>}
+        {(role==='hadmin'||role==='super')&&<>
+          <div className="form-group"><label>Username</label>
+            <input placeholder={role==='super'?'Enter username':'Hospital admin username'} value={f.u} onChange={e=>setF(p=>({...p,u:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&go()}/>
+          </div>
+          <div className="form-group"><label>Password</label>
+            <input type="password" placeholder="••••••••" value={f.p} onChange={e=>setF(p=>({...p,p:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&go()}/>
+          </div>
+          {role==='super'&&<>
+            <p style={{fontSize:'.78rem',color:'var(--muted)',marginBottom:'.3rem'}}>Default: Username / Password</p>
+            {DB.isConfigured()&&<p style={{fontSize:'.72rem',color:'var(--teal)',marginBottom:'1rem'}}>⚡ Supabase connected</p>}
+          </>}
+          <button className="btn btn-navy btn-lg" style={{width:'100%',justifyContent:'center'}} onClick={go}>Sign In →</button>
+          {role==='hadmin'&&<p style={{marginTop:'1rem',textAlign:'center',fontSize:'.85rem',color:'var(--muted)'}}>
+            New hospital? <span style={{color:'var(--teal)',cursor:'pointer',fontWeight:600}} onClick={()=>onLogin({role:'register'})}>Register here →</span>
+          </p>}
+        </>}
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── REGISTER ───────────────────────────── */
+function RegisterPage({onBack,toast}){
+  const[f,setF]=useState({name:'',address:'',city:'',phone:'',email:'',type:'',aname:'',auser:'',apass:''});
+  const[err,setErr]=useState('');
+  const[done,setDone]=useState(false);
+  const i=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  const submit=()=>{
+    setErr('');
+    if(!f.name.trim()||!f.aname.trim()||!f.auser.trim()||!f.apass){setErr('Hospital name, admin name, username & password are required.');return;}
+    if(f.apass.length<6){setErr('Password must be at least 6 characters.');return;}
+    const hs=DB.get('hospitals',[]);
+    if(hs.find(h=>h.adminUser===f.auser.trim())){setErr('Username already taken.');return;}
+    const h={id:uid(),name:f.name.trim(),address:f.address.trim(),city:f.city.trim(),phone:f.phone.trim(),email:f.email.trim(),type:f.type,adminName:f.aname.trim(),adminUser:f.auser.trim(),adminPass:f.apass,status:'pending',rejectReason:'',doctors:[],about:'',createdAt:new Date().toLocaleDateString()};
+    DB.set('hospitals',[...hs,h]);
+    setDone(true);
+    toast('Registration submitted! Awaiting approval.','ok','✅');
+  };
+
+  if(done) return <div className="login-page">
+    <div className="login-wrap fade-in">
+      <div className="login-brand"><h1>Health<span>Grid</span></h1></div>
+      <div className="login-card" style={{textAlign:'center'}}>
+        <div style={{fontSize:'3rem',marginBottom:'1rem'}}>📋</div>
+        <h2 style={{marginBottom:'.75rem'}}>Registration Submitted</h2>
+        <p style={{color:'var(--muted)',marginBottom:'1.5rem',lineHeight:1.7}}>Your hospital registration is pending Super Admin review. Log in once approved.</p>
+        <button className="btn btn-navy" onClick={onBack}>← Back to Login</button>
+      </div>
+    </div>
+  </div>;
+
+  return <div className="login-page" style={{alignItems:'flex-start',paddingTop:'2rem'}}>
+    <div className="login-wrap fade-in" style={{maxWidth:600}}>
+      <div className="login-brand"><h1>Health<span>Grid</span></h1><p>Register Hospital</p></div>
+      <div className="login-card">
+        <button className="back" onClick={onBack}>← Back to Login</button>
+        {err&&<div className="alert alert-err">⚠️ {err}</div>}
+        <p style={{color:'var(--muted)',fontSize:'.85rem',marginBottom:'1.25rem'}}>Your registration will be reviewed before activation.</p>
+        <hr className="divider"/>
+        <h4 style={{marginBottom:'1rem',fontFamily:'Playfair Display,serif',fontSize:'1rem'}}>🏥 Hospital Details</h4>
+        <div className="form-row">
+          <div className="form-group"><label>Hospital Name *</label><input placeholder="City Medical Center" value={f.name} onChange={e=>i('name',e.target.value)}/></div>
+          <div className="form-group"><label>Type</label>
+            <select value={f.type} onChange={e=>i('type',e.target.value)}><option value="">Select</option>{['Government','Private','Trust','Clinic','Multispeciality'].map(t=><option key={t}>{t}</option>)}</select>
+          </div>
+        </div>
+        <div className="form-group"><label>Address</label><input placeholder="123 Health Ave" value={f.address} onChange={e=>i('address',e.target.value)}/></div>
+        <div className="form-row">
+          <div className="form-group"><label>City</label><input placeholder="Chennai" value={f.city} onChange={e=>i('city',e.target.value)}/></div>
+          <div className="form-group"><label>Phone</label><input placeholder="+91 98765 43210" value={f.phone} onChange={e=>i('phone',e.target.value)}/></div>
+        </div>
+        <div className="form-group"><label>Email</label><input type="email" placeholder="admin@hospital.com" value={f.email} onChange={e=>i('email',e.target.value)}/></div>
+        <hr className="divider"/>
+        <h4 style={{marginBottom:'1rem',fontFamily:'Playfair Display,serif',fontSize:'1rem'}}>👤 Admin Account</h4>
+        <div className="form-group"><label>Admin Full Name *</label><input placeholder="Dr. Rajesh Kumar" value={f.aname} onChange={e=>i('aname',e.target.value)}/></div>
+        <div className="form-row">
+          <div className="form-group"><label>Username *</label><input placeholder="cityhospital_admin" value={f.auser} onChange={e=>i('auser',e.target.value)}/></div>
+          <div className="form-group"><label>Password *</label><input type="password" placeholder="Min 6 chars" value={f.apass} onChange={e=>i('apass',e.target.value)}/></div>
+        </div>
+        <button className="btn btn-primary btn-lg" style={{width:'100%',justifyContent:'center',marginTop:'.5rem'}} onClick={submit}>Submit Registration →</button>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── SUPER ADMIN ────────────────────────── */
+function SuperDash({toast,liveData}){
+  const[hs,setHs]=useState(()=>DB.get('hospitals',[]));
+  // React to Firebase real-time pushes
+  useEffect(()=>{ setHs([...DB.get('hospitals',[])]); },[liveData]); // liveData=syncTick
+  const syncAndRefresh=async()=>{ await DB.load(); setHs([...DB.get('hospitals',[])]); };
+  const[tab,setTab]=useState('pending');
+  const[sel,setSel]=useState(null);
+  const[rejModal,setRejModal]=useState(null);
+  const[reason,setReason]=useState('');
+
+  const save=h=>{DB.set('hospitals',h);setHs([...h]);};
+  const approve=id=>{save(hs.map(h=>h.id===id?{...h,status:'approved',rejectReason:''}:h));toast('Hospital approved!','ok','✅');setSel(null);};
+  const reject=()=>{if(!reason.trim()){toast('Enter reason.','err','⚠️');return;}save(hs.map(h=>h.id===rejModal?{...h,status:'rejected',rejectReason:reason}:h));setRejModal(null);setReason('');toast('Registration rejected.','err','❌');setSel(null);};
+  const del=id=>{if(!confirm('Delete this hospital permanently?'))return;save(hs.filter(h=>h.id!==id));toast('Deleted.','err','🗑️');setSel(null);};
+
+  const pending=hs.filter(h=>h.status==='pending');
+  const approved=hs.filter(h=>h.status==='approved');
+  const rejected=hs.filter(h=>h.status==='rejected');
+
+  const SBadge=({s})=>s==='approved'?<span className="badge badge-teal">✓ Approved</span>:s==='rejected'?<span className="badge badge-red">✗ Rejected</span>:<span className="badge badge-amber">⏳ Pending</span>;
+
+  if(sel){
+    const h=hs.find(x=>x.id===sel); if(!h)return null;
+    return <div className="fade-in">
+      <div className="back" onClick={()=>setSel(null)}>← Dashboard</div>
+      <div className="page-header"><div><div className="page-title">{h.name}</div><div className="page-sub">{h.city} · {h.createdAt}</div></div><SBadge s={h.status}/></div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1rem',marginBottom:'1.25rem'}}>
+        {[['Name',h.name],['Type',h.type||'—'],['City',h.city||'—'],['Address',h.address||'—'],['Phone',h.phone||'—'],['Email',h.email||'—'],['Admin',h.adminName],['Username',h.adminUser]].map(([k,v])=>
+          <div key={k} className="card" style={{padding:'1rem'}}><div style={{fontSize:'.72rem',color:'var(--muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:'.3rem'}}>{k}</div><div style={{fontWeight:500}}>{v}</div></div>
+        )}
+      </div>
+      {h.status==='rejected'&&<div style={{background:'var(--red-lt)',border:'1px solid #fca5a5',borderRadius:10,padding:'1rem',marginBottom:'1rem',color:'var(--red)'}}><strong>Rejection reason:</strong> {h.rejectReason}</div>}
+      {h.status==='approved'&&<p style={{marginBottom:'1rem',color:'var(--muted)'}}>Doctors registered: <strong>{h.doctors?.length||0}</strong></p>}
+      <div style={{display:'flex',gap:'.75rem',flexWrap:'wrap'}}>
+        {h.status!=='approved'&&<button className="btn btn-primary" onClick={()=>approve(h.id)}>✓ Approve</button>}
+        {h.status!=='rejected'&&<button className="btn btn-red" onClick={()=>setRejModal(h.id)}>✗ Reject</button>}
+        {h.status==='approved'&&h.status!=='rejected'&&<button className="btn btn-ghost" onClick={()=>{if(window.confirm('Revoke approval? Hospital will become pending.'))save(hs.map(x=>x.id===h.id?{...x,status:'pending'}:x));setSel(null);}}>↩ Revoke</button>}
+        <button className="btn btn-ghost" style={{marginLeft:'auto'}} onClick={()=>del(h.id)}>🗑️ Delete</button>
+      </div>
+    </div>;
+  }
+
+  return <div className="fade-in">
+    <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'1rem',gap:'.5rem'}}>
+      <button className="btn btn-ghost btn-sm" onClick={()=>syncAndRefresh().then(()=>toast('Data refreshed from cloud.','ok','☁️'))}>☁️ Sync</button>
+    </div>
+    <div className="stats">
+      <div className="stat"><div className="stat-val">{hs.length}</div><div className="stat-lbl">Total</div></div>
+      <div className="stat"><div className="stat-val" style={{color:'var(--amber)'}}>{pending.length}</div><div className="stat-lbl">Pending</div></div>
+      <div className="stat"><div className="stat-val" style={{color:'var(--teal)'}}>{approved.length}</div><div className="stat-lbl">Approved</div></div>
+      <div className="stat"><div className="stat-val" style={{color:'var(--red)'}}>{rejected.length}</div><div className="stat-lbl">Rejected</div></div>
+      <div className="stat"><div className="stat-val">{hs.reduce((a,h)=>a+(h.doctors?.length||0),0)}</div><div className="stat-lbl">Doctors</div></div>
+    </div>
+    <div className="tabs">
+      {[['pending',`Pending (${pending.length})`],['approved',`Approved (${approved.length})`],['rejected',`Rejected (${rejected.length})`],['all','All']].map(([t,l])=>
+        <button key={t} className={`tab ${tab===t?'active':''}`} onClick={()=>setTab(t)}>{l}</button>)}
+    </div>
+    {(()=>{
+      const list=tab==='pending'?pending:tab==='approved'?approved:tab==='rejected'?rejected:hs;
+      if(!list.length) return <div className="empty"><div className="empty-icon">📋</div><h3>Nothing here</h3><p>Registrations will appear once hospitals submit requests.</p></div>;
+      return <div className="tbl-wrap"><table>
+        <thead><tr><th>Hospital</th><th>City</th><th>Type</th><th>Admin</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>{list.map(h=><tr key={h.id}>
+          <td><strong>{h.name}</strong></td><td>{h.city||'—'}</td><td>{h.type||'—'}</td><td>{h.adminName}</td><td>{h.createdAt}</td>
+          <td><SBadge s={h.status}/></td>
+          <td><div style={{display:'flex',gap:'.4rem'}}>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setSel(h.id)}>View</button>
+            {h.status==='pending'&&<><button className="btn btn-primary btn-sm" onClick={()=>approve(h.id)}>✓</button><button className="btn btn-red btn-sm" onClick={()=>setRejModal(h.id)}>✗</button></>}
+          </div></td>
+        </tr>)}</tbody>
+      </table></div>;
+    })()}
+    {rejModal&&<Modal title="Reject Registration" onClose={()=>setRejModal(null)}
+      footer={<><button className="btn btn-ghost" onClick={()=>setRejModal(null)}>Cancel</button><button className="btn btn-red" onClick={reject}>Confirm Rejection</button></>}>
+      <div className="form-group"><label>Reason *</label><textarea placeholder="Reason for rejection..." value={reason} onChange={e=>setReason(e.target.value)} style={{minHeight:100}}/></div>
+    </Modal>}
+  </div>;
+}
+
+/* ── HOSPITAL ADMIN ─────────────────────── */
+function HospitalAdminDash({session,toast,liveData}){
+  const getH=()=>DB.get('hospitals',[]).find(h=>h.id===session.hid)||null;
+  const[hospital,setHospital]=useState(getH);
+  const[cloudSyncing,setCloudSyncing]=useState(false);
+  useEffect(()=>{
+    setCloudSyncing(true);
+    DB.load().then(()=>{ setHospital(getH()); setCloudSyncing(false); });
+  },[]);
+  // React to Firebase real-time pushes
+  useEffect(()=>{ const h=getH(); if(h) setHospital({...h}); },[liveData]);
+  const[tab,setTab]=useState('overview');
+  const[addOpen,setAddOpen]=useState(false);
+  const[editDoc,setEditDoc]=useState(null);
+  const[editInfo,setEditInfo]=useState(false);
+  const[specF,setSpecF]=useState('All');
+  const[df,setDf]=useState({name:'',spec:'',gender:'',startHr:'09',startMin:'00',startAmPm:'AM',endHr:'05',endMin:'00',endAmPm:'PM',days:[],about:''});
+  const[hf,setHf]=useState({});
+  const[dErr,setDErr]=useState('');
+  const[hErr,setHErr]=useState('');
+
+  const save=u=>{const all=DB.get('hospitals',[]);DB.set('hospitals',all.map(h=>h.id===u.id?u:h));setHospital(u);};
+  const di=(k,v)=>setDf(p=>({...p,[k]:v}));
+
+  const openAdd=()=>{
+    setEditDoc(null);
+    setDf({name:'',spec:'',gender:'',startHr:'09',startMin:'00',startAmPm:'AM',endHr:'05',endMin:'00',endAmPm:'PM',days:[],about:''});
+    setDErr('');
+    setAddOpen(true);
+  };
+  const openEdit=d=>{
+    setAddOpen(false);
+    setDf({
+      name:d.name,spec:d.spec,gender:d.gender||'',
+      startHr:d.startHr||'09',startMin:d.startMin||'00',startAmPm:d.startAmPm||'AM',
+      endHr:d.endHr||'05',endMin:d.endMin||'00',endAmPm:d.endAmPm||'PM',
+      days:Array.isArray(d.days)?d.days:[],about:d.about||''
+    });
+    setDErr('');
+    setEditDoc(d);
+  };
+
+  const submitDoc=()=>{
+    setDErr('');
+    if(!df.name.trim()){setDErr('Name required.');return;}
+    if(!df.spec){setDErr('Specialization required.');return;}
+    if(!df.startHr||!df.endHr){setDErr('Duty timings required.');return;}
+    if(editDoc){
+      const updatedDoc={...editDoc,...df,name:df.name.trim()};
+      const prevDoc=editDoc;
+      const newHosp={...hospital,doctors:hospital.doctors.map(d=>d.id===editDoc.id?updatedDoc:d)};
+      // Check if schedule changed → notify starred users
+      const schedChanged=(prevDoc.startHr!==df.startHr||prevDoc.startMin!==df.startMin||prevDoc.startAmPm!==df.startAmPm||prevDoc.endHr!==df.endHr||prevDoc.endMin!==df.endMin||prevDoc.endAmPm!==df.endAmPm||JSON.stringify(prevDoc.days||[])!==JSON.stringify(df.days||[]));
+      if(schedChanged){
+        const notifs=DB.get('notifications',[]);
+        const stars=DB.get('stars',[]);
+        const interested=stars.filter(s=>s.hid===hospital.id&&s.did===editDoc.id);
+        interested.forEach(s=>{
+          notifs.push({id:uid(),userId:s.userId,hid:hospital.id,did:editDoc.id,hname:hospital.name,dname:df.name.trim(),msg:`Schedule updated: ${df.startHr}:${df.startMin} ${df.startAmPm} – ${df.endHr}:${df.endMin} ${df.endAmPm}${df.days&&df.days.length?' on '+df.days.join(', '):''}`,ts:Date.now(),read:false});
+        });
+        DB.set('notifications',notifs);
+      }
+      save(newHosp);
+      setEditDoc(null);setAddOpen(false);toast('Doctor updated.'+(schedChanged?' Notifications sent to starred users.':''),'ok','✏️');
+    } else {
+      save({...hospital,doctors:[...hospital.doctors,{id:uid(),...df,name:df.name.trim()}]});
+      setAddOpen(false);setEditDoc(null);toast('Doctor added!','ok','👨‍⚕️');
+    }
+  };
+  const delDoc=id=>{if(!confirm('Remove doctor?'))return;save({...hospital,doctors:hospital.doctors.filter(d=>d.id!==id)});toast('Doctor removed.','err','🗑️');};
+
+  const saveInfo=()=>{
+    setHErr('');
+    if(!hf.name?.trim()){setHErr('Name required.');return;}
+    save({...hospital,...hf,name:hf.name.trim()});
+    setEditInfo(false);toast('Info updated!','ok','✅');
+  };
+
+  const docs=hospital?.doctors||[];
+  const filtDocs=specF==='All'?docs:docs.filter(d=>d.spec===specF);
+  const specs=[...new Set(docs.map(d=>d.spec))];
+
+  if(!hospital) return <div className="empty"><div className="empty-icon">⚠️</div><h3>Hospital not found</h3></div>;
+
+  // Form fields as a plain variable (NOT a nested component) to prevent remount on keystroke
+  const ALL_DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const HRS=Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0'));
+  const MINS=['00','15','30','45'];
+  const toggleDay=d=>di('days', df.days.includes(d) ? df.days.filter(x=>x!==d) : [...df.days,d]);
+
+  const docFormFields = <>
+    {dErr&&<div className="alert alert-err">⚠️ {dErr}</div>}
+
+    <div className="form-row">
+      <div className="form-group">
+        <label>Doctor Full Name *</label>
+        <input placeholder="Dr. Priya Sharma" value={df.name} onChange={e=>di('name',e.target.value)}/>
+      </div>
+      <div className="form-group">
+        <label>Gender *</label>
+        <select value={df.gender} onChange={e=>di('gender',e.target.value)}>
+          <option value="">Select gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="form-group">
+      <label>Specialization *</label>
+      <select value={df.spec} onChange={e=>di('spec',e.target.value)}>
+        <option value="">Select specialization</option>
+        {SPECS.map(s=><option key={s}>{s}</option>)}
+      </select>
+    </div>
+
+    <div className="form-group">
+      <label>Duty Start Time *</label>
+      <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+        <select value={df.startHr} onChange={e=>di('startHr',e.target.value)} style={{flex:1}}>
+          {HRS.map(h=><option key={h} value={h}>{h}</option>)}
+        </select>
+        <span style={{color:'var(--muted)',fontWeight:600}}>:</span>
+        <select value={df.startMin} onChange={e=>di('startMin',e.target.value)} style={{flex:1}}>
+          {MINS.map(m=><option key={m} value={m}>{m}</option>)}
+        </select>
+        <select value={df.startAmPm} onChange={e=>di('startAmPm',e.target.value)} style={{flex:1,fontWeight:600}}>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="form-group">
+      <label>Duty End Time *</label>
+      <div style={{display:'flex',gap:'.5rem',alignItems:'center'}}>
+        <select value={df.endHr} onChange={e=>di('endHr',e.target.value)} style={{flex:1}}>
+          {HRS.map(h=><option key={h} value={h}>{h}</option>)}
+        </select>
+        <span style={{color:'var(--muted)',fontWeight:600}}>:</span>
+        <select value={df.endMin} onChange={e=>di('endMin',e.target.value)} style={{flex:1}}>
+          {MINS.map(m=><option key={m} value={m}>{m}</option>)}
+        </select>
+        <select value={df.endAmPm} onChange={e=>di('endAmPm',e.target.value)} style={{flex:1,fontWeight:600}}>
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="form-group">
+      <label>Working Days</label>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'.4rem',marginTop:'.2rem'}}>
+        {ALL_DAYS.map(d=>(
+          <button key={d} type="button"
+            onClick={()=>toggleDay(d)}
+            style={{
+              padding:'.3rem .75rem',borderRadius:99,fontSize:'.78rem',fontWeight:600,cursor:'pointer',
+              border:'1.5px solid',transition:'all .15s',fontFamily:'inherit',
+              background: df.days.includes(d)?'var(--navy)':'var(--surface)',
+              borderColor: df.days.includes(d)?'var(--navy)':'var(--border2)',
+              color: df.days.includes(d)?'#fff':'var(--muted)',
+            }}
+          >{d.slice(0,3)}</button>
+        ))}
+      </div>
+      {df.days.length>0&&<p style={{fontSize:'.78rem',color:'var(--teal)',marginTop:'.4rem'}}>✓ {df.days.join(', ')}</p>}
+    </div>
+
+    <div className="form-group">
+      <label>Professional Bio (optional)</label>
+      <textarea placeholder="Brief professional background..." value={df.about} onChange={e=>di('about',e.target.value)}/>
+    </div>
+    <p style={{fontSize:'.78rem',color:'var(--muted)',marginTop:'.25rem'}}>🔒 No personal contact info stored or displayed.</p>
+  </>;
+
+  return <div className="fade-in">
+    <div className="stats">
+      <div className="stat"><div className="stat-val">{docs.length}</div><div className="stat-lbl">Doctors</div></div>
+      <div className="stat"><div className="stat-val">{specs.length}</div><div className="stat-lbl">Specializations</div></div>
+      <div className="stat"><div className="stat-val" style={{color:'var(--teal)',fontSize:'1rem',paddingTop:'.5rem'}}>✓ Live</div><div className="stat-lbl">Status</div></div>
+    </div>
+    <div className="tabs">
+      {[['overview','🏥 Overview'],['doctors','👨‍⚕️ Doctors'],['info','⚙️ Info']].map(([t,l])=>
+        <button key={t} className={`tab ${tab===t?'active':''}`} onClick={()=>setTab(t)}>{l}</button>)}
+    </div>
+
+    {tab==='overview'&&<div>
+      <div className="page-header"><div><div className="page-title">{hospital.name}</div><div className="page-sub">{hospital.city||''} · Admin: {hospital.adminName}</div></div><span className="badge badge-teal">✓ Approved</span></div>
+      {docs.length===0
+        ?<div className="empty"><div className="empty-icon">👨‍⚕️</div><h3>No doctors yet</h3><p>Switch to the Doctors tab to add your first doctor.</p><button className="btn btn-primary" onClick={()=>setTab('doctors')}>Add Doctors →</button></div>
+        :<>
+          <h3 style={{marginBottom:'.75rem',fontFamily:'Playfair Display,serif',fontSize:'1.1rem'}}>Available Specializations ({specs.length})</h3>
+          <div style={{display:'flex',flexWrap:'wrap',gap:'.5rem',padding:'1rem',background:'var(--teal-lt)',border:'1px solid var(--teal-md)',borderRadius:'var(--radius)',marginBottom:'2rem'}}>
+            {specs.length>0?specs.map(s=><SpecBadge key={s} spec={s}/>):<span style={{color:'var(--muted)',fontSize:'.875rem'}}>No specializations yet.</span>}
+          </div>
+          <h3 style={{marginBottom:'1rem',fontFamily:'Playfair Display,serif'}}>All Doctors ({docs.length})</h3>
+          <div className="card-grid">{docs.map(d=><div key={d.id} className="doc-card">
+            <div className="doc-avatar" style={{background:(SC[d.spec]||'#555')+'20'}}>{d.gender?genderIcon(d.gender):(SI[d.spec]||'👨‍⚕️')}</div>
+            <div className="doc-name">{d.name}</div>
+            {d.gender&&<div className="doc-timing">{genderIcon(d.gender)} {d.gender}</div>}
+            <SpecBadge spec={d.spec}/>
+            <div className="doc-timing">⏰ {fmtDocTime(d)}</div>
+            {fmtDocDays(d)!=='—'&&<div className="doc-timing">📅 {fmtDocDays(d)}</div>}
+            {d.about&&<p style={{color:'var(--muted)',fontSize:'.8rem',marginTop:'.5rem',lineHeight:1.6}}>{d.about}</p>}
+          </div>)}</div>
+        </>}
+    </div>}
+
+    {tab==='doctors'&&<div>
+      <div className="page-header"><div><div className="page-title">Manage Doctors</div><div className="page-sub">Add or edit doctors individually</div></div><button className="btn btn-primary" onClick={openAdd}>+ Add Doctor</button></div>
+      {specs.length>0&&<div className="filter-row">{['All',...specs].map(s=><button key={s} className={`fchip ${specF===s?'on':''}`} onClick={()=>setSpecF(s)}>{s}</button>)}</div>}
+      {docs.length===0?<div className="empty"><div className="empty-icon">👨‍⚕️</div><h3>No doctors yet</h3></div>
+      :filtDocs.length===0?<div className="empty"><div className="empty-icon">🔍</div><h3>No matches</h3></div>
+      :<div className="tbl-wrap"><table>
+        <thead><tr><th>Doctor</th><th>Gender</th><th>Specialization</th><th>Duty Hours</th><th>Working Days</th><th>Actions</th></tr></thead>
+        <tbody>{filtDocs.map(d=><tr key={d.id}>
+          <td><div style={{display:'flex',alignItems:'center',gap:'.6rem'}}>
+            <div style={{width:34,height:34,borderRadius:9,background:(SC[d.spec]||'#555')+'20',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem',flexShrink:0}}>{d.gender?genderIcon(d.gender):(SI[d.spec]||'👨‍⚕️')}</div>
+            <span style={{fontWeight:500}}>{d.name}</span>
+          </div></td>
+          <td><span style={{fontSize:'.85rem',color:'var(--muted)',display:'flex',alignItems:'center',gap:'.3rem'}}>{d.gender?genderIcon(d.gender):''} {d.gender||'—'}</span></td>
+          <td><SpecBadge spec={d.spec}/></td>
+          <td style={{color:'var(--muted)',fontSize:'.85rem'}}>⏰ {fmtDocTime(d)}</td>
+          <td style={{color:'var(--muted)',fontSize:'.85rem'}}>{fmtDocDays(d)}</td>
+          <td><div style={{display:'flex',gap:'.4rem'}}>
+            <button className="btn btn-ghost btn-sm" onClick={()=>openEdit(d)}>✏️ Edit</button>
+            <button className="btn btn-sm" style={{background:'var(--red-lt)',color:'var(--red)',border:'1px solid #fca5a5'}} onClick={()=>delDoc(d.id)}>🗑️</button>
+          </div></td>
+        </tr>)}</tbody>
+      </table></div>}
+    </div>}
+
+    {tab==='info'&&<div>
+      <div className="page-header"><div><div className="page-title">Hospital Info</div><div className="page-sub">Update public profile</div></div>
+        {!editInfo&&<button className="btn btn-navy" onClick={()=>{setHf({name:hospital.name,address:hospital.address||'',city:hospital.city||'',phone:hospital.phone||'',email:hospital.email||'',type:hospital.type||'',about:hospital.about||''});setHErr('');setEditInfo(true);}}>✏️ Edit</button>}
+      </div>
+      {!editInfo?<div className="card-grid">
+        {[['Name',hospital.name],['Type',hospital.type||'—'],['Address',hospital.address||'—'],['City',hospital.city||'—'],['Phone',hospital.phone||'—'],['Email',hospital.email||'—']].map(([k,v])=>
+          <div key={k} className="card" style={{padding:'1rem'}}><div style={{fontSize:'.72rem',color:'var(--muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:'.3rem'}}>{k}</div><div style={{fontWeight:500}}>{v}</div></div>)}
+        {hospital.about&&<div className="card" style={{padding:'1rem',gridColumn:'1/-1'}}><div style={{fontSize:'.72rem',color:'var(--muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.06em',marginBottom:'.3rem'}}>About</div><div>{hospital.about}</div></div>}
+      </div>:<div className="card">
+        {hErr&&<div className="alert alert-err">⚠️ {hErr}</div>}
+        <div className="form-row">
+          <div className="form-group"><label>Name *</label><input value={hf.name||''} onChange={e=>setHf(p=>({...p,name:e.target.value}))}/></div>
+          <div className="form-group"><label>Type</label><select value={hf.type||''} onChange={e=>setHf(p=>({...p,type:e.target.value}))}><option value="">Select</option>{['Government','Private','Trust','Clinic','Multispeciality'].map(t=><option key={t}>{t}</option>)}</select></div>
+        </div>
+        <div className="form-group"><label>Address</label><input value={hf.address||''} onChange={e=>setHf(p=>({...p,address:e.target.value}))}/></div>
+        <div className="form-row">
+          <div className="form-group"><label>City</label><input value={hf.city||''} onChange={e=>setHf(p=>({...p,city:e.target.value}))}/></div>
+          <div className="form-group"><label>Phone</label><input value={hf.phone||''} onChange={e=>setHf(p=>({...p,phone:e.target.value}))}/></div>
+        </div>
+        <div className="form-group"><label>Email</label><input value={hf.email||''} onChange={e=>setHf(p=>({...p,email:e.target.value}))}/></div>
+        <div className="form-group"><label>About</label><textarea value={hf.about||''} onChange={e=>setHf(p=>({...p,about:e.target.value}))}/></div>
+        <div style={{display:'flex',gap:'.75rem'}}><button className="btn btn-primary" onClick={saveInfo}>Save</button><button className="btn btn-ghost" onClick={()=>setEditInfo(false)}>Cancel</button></div>
+      </div>}
+    </div>}
+
+    {(addOpen||editDoc)&&<Modal
+        key={editDoc?`edit-${editDoc.id}`:'add'}
+        title={editDoc?`Edit — ${editDoc.name}`:'Add New Doctor'}
+        onClose={()=>{setAddOpen(false);setEditDoc(null);}}
+        footer={<>
+          <button className="btn btn-ghost" onClick={()=>{setAddOpen(false);setEditDoc(null);}}>Cancel</button>
+          <button className="btn btn-primary" onClick={submitDoc}>{editDoc?'Save Changes':'Add Doctor'}</button>
+        </>}>
+      {docFormFields}
+    </Modal>}
+  </div>;
+}
+
+/* ── USER VIEW ──────────────────────────── */
+function UserView({liveData}){
+  // Each user gets a persistent random ID stored in localStorage
+  const[userId]=useState(()=>{
+    let id=LC.get('my_user_id',null);
+    if(!id){id=uid();LC.set('my_user_id',id);}
+    return id;
+  });
+
+  const[hs,setHs]=useState(()=>DB.get('hospitals',[]).filter(h=>h.status==='approved'));
+  const[loadingCloud,setLoadingCloud]=useState(true);
+  useEffect(()=>{
+    DB.load().then(()=>{
+      setHs(DB.get('hospitals',[]).filter(h=>h.status==='approved'));
+      setNotifs(DB.get('notifications',[]).filter(n=>n.userId===userId));
+      setStars(DB.get('stars',[]));
+      setLoadingCloud(false);
+    });
+  },[]);
+  // Re-read from MEM on every sync tick
+  useEffect(()=>{
+    setHs([...DB.get('hospitals',[]).filter(h=>h.status==='approved')]);
+    setNotifs([...DB.get('notifications',[]).filter(n=>n.userId===userId)]);
+    setStars([...DB.get('stars',[])]);
+  },[liveData]);
+  const[view,setView]=useState('list');
+  const[sel,setSel]=useState(null);
+  const[search,setSearch]=useState('');
+  const[specF,setSpecF]=useState('All');
+  const[stars,setStars]=useState(()=>DB.get('stars',[]));
+  const[notifs,setNotifs]=useState(()=>DB.get('notifications',[]).filter(n=>n.userId===DB.get('my_user_id',null)));
+  const[showNotifs,setShowNotifs]=useState(false);
+  const[tab,setTab]=useState('hospitals'); // 'hospitals' | 'starred'
+
+  // Refresh hospitals and notifications from storage
+  const refresh=()=>{
+    DB.load().then(()=>{
+      setHs(DB.get('hospitals',[]).filter(h=>h.status==='approved'));
+      setNotifs(DB.get('notifications',[]).filter(n=>n.userId===userId));
+      setStars(DB.get('stars',[]));
+    });
+  };
+
+  const isStarred=(hid,did)=>stars.some(s=>s.userId===userId&&s.hid===hid&&s.did===did);
+
+  const toggleStar=(hid,did,e)=>{
+    e.stopPropagation();
+    const all=DB.get('stars',[]);
+    const exists=all.find(s=>s.userId===userId&&s.hid===hid&&s.did===did);
+    const updated=exists?all.filter(s=>!(s.userId===userId&&s.hid===hid&&s.did===did)):[...all,{userId,hid,did}];
+    DB.set('stars',updated); // syncs to cloud
+    setStars(updated);
+  };
+
+  const markAllRead=()=>{
+    const all=DB.get('notifications',[]);
+    const updated=all.map(n=>n.userId===userId?{...n,read:true}:n);
+    DB.set('notifications',updated); // syncs to cloud
+    setNotifs(updated.filter(n=>n.userId===userId));
+  };
+
+  const clearNotifs=()=>{
+    const all=DB.get('notifications',[]).filter(n=>n.userId!==userId);
+    DB.set('notifications',all); // syncs to cloud
+    setNotifs([]);
+  };
+
+  const unread=notifs.filter(n=>!n.read).length;
+  const curH=hs.find(h=>h.id===sel);
+  const filtered=hs.filter(h=>h.name.toLowerCase().includes(search.toLowerCase())||(h.city||'').toLowerCase().includes(search.toLowerCase()));
+  const allSpecs=[...new Set(hs.flatMap(h=>h.doctors.map(d=>d.spec)))];
+
+  // Starred doctors list
+  const myStars=stars.filter(s=>s.userId===userId);
+  const starredDocs=myStars.map(s=>{
+    const h=hs.find(x=>x.id===s.hid);
+    if(!h)return null;
+    const d=h.doctors.find(x=>x.id===s.did);
+    if(!d)return null;
+    return{...d,hname:h.name,hid:h.id};
+  }).filter(Boolean);
+
+  // Notification bell
+  const NotifBell=()=><div style={{position:'relative',display:'inline-block'}}>
+    <button className="btn btn-ghost btn-sm" onClick={()=>{setShowNotifs(p=>!p);if(unread>0)markAllRead();}}
+      style={{position:'relative',padding:'.4rem .7rem',fontSize:'1.1rem'}}>
+      🔔
+      {unread>0&&<span style={{position:'absolute',top:0,right:0,background:'#ef4444',color:'#fff',borderRadius:99,fontSize:'.6rem',fontWeight:700,padding:'1px 5px',lineHeight:1.4,minWidth:16,textAlign:'center'}}>{unread}</span>}
+    </button>
+    {showNotifs&&<div style={{position:'absolute',right:0,top:'calc(100% + 8px)',width:340,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:14,boxShadow:'var(--shadow-lg)',zIndex:300,overflow:'hidden'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.75rem 1rem',borderBottom:'1px solid var(--border)',background:'var(--surface2)'}}>
+        <strong style={{fontSize:'.9rem'}}>🔔 Notifications</strong>
+        <div style={{display:'flex',gap:'.4rem'}}>
+          {notifs.length>0&&<button className="btn btn-ghost btn-sm" style={{fontSize:'.72rem',padding:'.2rem .6rem'}} onClick={clearNotifs}>Clear all</button>}
+          <button className="modal-close" onClick={()=>setShowNotifs(false)}>✕</button>
+        </div>
+      </div>
+      <div style={{maxHeight:320,overflowY:'auto'}}>
+        {notifs.length===0
+          ?<div style={{padding:'2rem',textAlign:'center',color:'var(--muted)',fontSize:'.875rem'}}>No notifications yet.<br/><span style={{fontSize:'.78rem'}}>Star a doctor to get schedule alerts.</span></div>
+          :[...notifs].reverse().map(n=><div key={n.id} style={{padding:'.75rem 1rem',borderBottom:'1px solid var(--border)',background:n.read?'transparent':'var(--teal-lt)',transition:'background .3s'}}>
+            <div style={{fontWeight:600,fontSize:'.82rem',color:'var(--navy)',marginBottom:'.2rem'}}>⭐ {n.dname} · {n.hname}</div>
+            <div style={{fontSize:'.82rem',color:'var(--text)',marginBottom:'.25rem'}}>{n.msg}</div>
+            <div style={{fontSize:'.72rem',color:'var(--muted)'}}>{new Date(n.ts).toLocaleString()}</div>
+          </div>)
+        }
+      </div>
+      <div style={{padding:'.5rem 1rem',borderTop:'1px solid var(--border)',background:'var(--surface2)',fontSize:'.75rem',color:'var(--muted)'}}>
+        ⭐ Star doctors to get notified when their schedule changes
+      </div>
+    </div>}
+  </div>;
+
+  if(view==='h'&&curH){
+    const docs=curH.doctors||[];
+    const hSpecs=[...new Set(docs.map(d=>d.spec))];
+    const fd=specF==='All'?docs:docs.filter(d=>d.spec===specF);
+    return <div className="fade-in">
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'1.5rem',flexWrap:'wrap',gap:'.75rem'}}>
+        <div className="back" style={{margin:0}} onClick={()=>{setView('list');setSpecF('All');refresh();}}>← All Hospitals</div>
+        <NotifBell/>
+      </div>
+      <div className="page-header"><div>
+        <div className="page-title">{curH.name}</div>
+        <div className="page-sub">{curH.type&&<span className="badge badge-navy" style={{marginRight:'.5rem'}}>{curH.type}</span>}{curH.city&&<span>📍 {curH.city}</span>}{curH.phone&&<span style={{marginLeft:'.75rem'}}>📞 {curH.phone}</span>}</div>
+      </div></div>
+      {curH.about&&<div className="card" style={{marginBottom:'1.5rem',padding:'1rem',background:'var(--teal-lt)',borderColor:'var(--teal-md)'}}><p style={{lineHeight:1.7}}>{curH.about}</p></div>}
+      {hSpecs.length>0&&<>
+        <h3 style={{marginBottom:'.75rem',fontFamily:'Playfair Display,serif',fontSize:'1.1rem'}}>Available Specializations</h3>
+        <div className="filter-row">{['All',...hSpecs].map(s=><button key={s} className={`fchip ${specF===s?'on':''}`} onClick={()=>setSpecF(s)}>{s}</button>)}</div>
+      </>}
+      {docs.length===0?<div className="empty"><div className="empty-icon">👨‍⚕️</div><h3>No Doctors Listed</h3><p>This hospital hasn't listed doctors yet.</p></div>
+      :fd.length===0?<div className="empty"><div className="empty-icon">🔍</div><h3>No Matches</h3></div>
+      :<>
+        <p style={{fontSize:'.8rem',color:'var(--muted)',marginBottom:'1rem'}}>⭐ Click the star on any doctor card to get notified if their schedule changes.</p>
+        <div className="card-grid">{fd.map(d=>{
+          const starred=isStarred(curH.id,d.id);
+          return <div key={d.id} className="doc-card" style={{position:'relative'}}>
+            <button onClick={e=>toggleStar(curH.id,d.id,e)}
+              style={{position:'absolute',top:'.75rem',right:'.75rem',background:'none',border:'none',cursor:'pointer',fontSize:'1.3rem',lineHeight:1,padding:'.1rem',transition:'transform .15s'}}
+              title={starred?'Remove from starred':'Star this doctor for schedule alerts'}>
+              {starred?'⭐':'☆'}
+            </button>
+            <div className="doc-avatar" style={{background:(SC[d.spec]||'#555')+'20'}}>{d.gender?genderIcon(d.gender):(SI[d.spec]||'👨‍⚕️')}</div>
+            <div className="doc-name" style={{paddingRight:'2rem'}}>{d.name}</div>
+            {d.gender&&<div className="doc-timing">{genderIcon(d.gender)} {d.gender}</div>}
+            <SpecBadge spec={d.spec}/>
+            <div className="doc-timing">⏰ {fmtDocTime(d)}</div>
+            {fmtDocDays(d)!=='—'&&<div className="doc-timing">📅 {fmtDocDays(d)}</div>}
+            {d.about&&<p style={{color:'var(--muted)',fontSize:'.8rem',marginTop:'.6rem',lineHeight:1.6}}>{d.about}</p>}
+            {starred&&<div style={{marginTop:'.6rem',fontSize:'.72rem',color:'var(--teal)',fontWeight:600}}>⭐ Starred — you'll get schedule alerts</div>}
+          </div>;
+        })}</div>
+      </>}
+    </div>;
+  }
+
+  return <div className="fade-in">
+    <div className="page-header">
+      <div><div className="page-title">Find a Hospital</div><div className="page-sub">Browse approved hospitals and their doctors</div></div>
+      <div style={{display:'flex',gap:'.75rem',alignItems:'center',flexWrap:'wrap'}}>
+        <NotifBell/>
+        <div className="search-wrap" style={{maxWidth:260}}><span className="search-ico">🔍</span><input placeholder="Search hospitals…" value={search} onChange={e=>setSearch(e.target.value)}/></div>
+      </div>
+    </div>
+
+    <div className="tabs" style={{marginBottom:'1.5rem'}}>
+      <button className={`tab ${tab==='hospitals'?'active':''}`} onClick={()=>setTab('hospitals')}>🏥 Hospitals</button>
+      <button className={`tab ${tab==='starred'?'active':''}`} onClick={()=>{setTab('starred');refresh();}}>
+        ⭐ My Starred Doctors {myStars.length>0&&<span style={{background:'var(--amber)',color:'#fff',borderRadius:99,fontSize:'.65rem',fontWeight:700,padding:'1px 6px',marginLeft:'.3rem'}}>{myStars.length}</span>}
+      </button>
+    </div>
+
+    {tab==='starred'&&<div>
+      {starredDocs.length===0
+        ?<div className="empty"><div className="empty-icon">⭐</div><h3>No starred doctors yet</h3><p>Browse hospitals and click the ⭐ star icon on doctor cards to follow them. You'll get notified when their schedule changes.</p></div>
+        :<>
+          <p style={{fontSize:'.85rem',color:'var(--muted)',marginBottom:'1.25rem'}}>You'll receive notifications when any of these doctors update their schedule.</p>
+          <div className="card-grid">{starredDocs.map(d=>{
+            const starred=isStarred(d.hid,d.id);
+            return <div key={d.id+d.hid} className="doc-card" style={{position:'relative'}}>
+              <button onClick={e=>toggleStar(d.hid,d.id,e)}
+                style={{position:'absolute',top:'.75rem',right:'.75rem',background:'none',border:'none',cursor:'pointer',fontSize:'1.3rem',lineHeight:1,padding:'.1rem'}}>
+                {starred?'⭐':'☆'}
+              </button>
+              <div style={{fontSize:'.72rem',color:'var(--muted)',marginBottom:'.4rem',fontWeight:600}}>🏥 {d.hname}</div>
+              <div className="doc-avatar" style={{background:(SC[d.spec]||'#555')+'20'}}>{d.gender?genderIcon(d.gender):(SI[d.spec]||'👨‍⚕️')}</div>
+              <div className="doc-name" style={{paddingRight:'2rem'}}>{d.name}</div>
+              {d.gender&&<div className="doc-timing">{genderIcon(d.gender)} {d.gender}</div>}
+              <SpecBadge spec={d.spec}/>
+              <div className="doc-timing">⏰ {fmtDocTime(d)}</div>
+              {fmtDocDays(d)!=='—'&&<div className="doc-timing">📅 {fmtDocDays(d)}</div>}
+            </div>;
+          })}</div>
+        </>}
+    </div>}
+
+    {tab==='hospitals'&&<>
+      {allSpecs.length>0&&<div className="filter-row">{['All',...allSpecs].map(s=><button key={s} className={`fchip ${specF===s?'on':''}`} onClick={()=>setSpecF(s)}>{s}</button>)}</div>}
+      {hs.length===0?<div className="empty"><div className="empty-icon">🏥</div><h3>No Data Available</h3><p>No hospitals registered yet. Check back later.</p></div>
+      :filtered.filter(h=>specF==='All'||h.doctors.some(d=>d.spec===specF)).length===0?<div className="empty"><div className="empty-icon">🔍</div><h3>No hospitals found</h3></div>
+      :<div className="card-grid">{filtered.filter(h=>specF==='All'||h.doctors.some(d=>d.spec===specF)).map(h=>{
+        const sp=[...new Set(h.doctors.map(d=>d.spec))];
+        return <div key={h.id} className="card" style={{cursor:'pointer'}} onClick={()=>{setSel(h.id);setView('h');setSpecF('All');refresh();}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'.75rem'}}>
+            <div style={{fontSize:'1.8rem'}}>🏥</div>
+            {h.type&&<span className="badge badge-navy">{h.type}</span>}
+          </div>
+          <div style={{fontWeight:600,fontSize:'1.05rem',marginBottom:'.25rem',color:'var(--navy)'}}>{h.name}</div>
+          {h.city&&<div style={{color:'var(--muted)',fontSize:'.82rem'}}>📍 {h.city}</div>}
+          {h.phone&&<div style={{color:'var(--muted)',fontSize:'.82rem',marginBottom:'.5rem'}}>📞 {h.phone}</div>}
+          <div style={{display:'flex',flexWrap:'wrap',gap:'.3rem',margin:'.6rem 0'}}>
+            {sp.slice(0,3).map(s=><SpecBadge key={s} spec={s}/>)}
+            {sp.length>3&&<span style={{color:'var(--muted2)',fontSize:'.75rem',alignSelf:'center'}}>+{sp.length-3} more</span>}
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',paddingTop:'.75rem',borderTop:'1px solid var(--border)'}}>
+            <span style={{color:'var(--muted)',fontSize:'.8rem'}}>{h.doctors.length} doctor{h.doctors.length!==1?'s':''}</span>
+            <span style={{color:'var(--teal)',fontSize:'.85rem',fontWeight:600}}>View →</span>
+          </div>
+        </div>;
+      })}</div>}
+    </>}
+  </div>;
+}
+
+/* ── SUPABASE SETUP WIZARD ──────────────── */
+function SetupWizard({onDone}){
+  const[sbUrl,setSbUrl]=useState('');
+  const[sbKey,setSbKey]=useState('');
+  const[loading,setLoading]=useState(false);
+  const[err,setErr]=useState('');
+  const[success,setSuccess]=useState(false);
+
+  const connect=async()=>{
+    setErr(''); setLoading(true);
+    const url=sbUrl.trim().replace(/\/$/,'');
+    const key=sbKey.trim();
+    if(!url||!key){ setErr('Both Project URL and Anon Key are required.'); setLoading(false); return; }
+    if(!url.includes('supabase.co')){ setErr("URL should be like: https://xxxx.supabase.co"); setLoading(false); return; }
+    // Save config so SB.headers() works
+    CFG.set(url, key);
+    // Test connection
+    const ok = await SB.test();
+    if(!ok){
+      CFG.clear();
+      setErr('Could not connect. Double-check your Project URL and Anon Key, and make sure the "appdata" table exists (see instructions).'); 
+      setLoading(false); return;
+    }
+    setSuccess(true); setLoading(false);
+    setTimeout(()=>onDone(), 1400);
+  };
+
+  const code = `create table appdata (
+  id integer primary key default 1,
+  payload jsonb default '{}'::jsonb,
+  constraint single_row check (id = 1)
+);
+insert into appdata (id, payload) values (1, '{}')
+on conflict (id) do nothing;`;
+
+  return <div style={{minHeight:'100vh',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'2rem',background:'var(--bg)',backgroundImage:'radial-gradient(ellipse at 30% 70%,rgba(13,140,114,.07) 0%,transparent 55%)',overflowY:'auto'}}>
+    <div style={{width:'100%',maxWidth:540,padding:'1rem 1rem 3rem'}} className="fade-in">
+      <div className="login-brand"><h1>Health<span>Grid</span></h1><p>Connect Supabase — One-time Setup</p></div>
+      <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:18,padding:'2rem',boxShadow:'var(--shadow-lg)'}}>
+
+        {success
+          ? <div style={{textAlign:'center',padding:'2rem 0'}}>
+              <div style={{fontSize:'3.5rem',marginBottom:'1rem'}}>✅</div>
+              <h2 style={{color:'var(--teal)',marginBottom:'.5rem',fontFamily:'Playfair Display,serif'}}>Connected!</h2>
+              <p style={{color:'var(--muted)'}}>Loading your database…</p>
+            </div>
+          : <>
+            <div style={{textAlign:'center',marginBottom:'1.5rem'}}>
+              <div style={{fontSize:'2.5rem',marginBottom:'.5rem'}}>⚡</div>
+              <h2 style={{fontSize:'1.25rem',marginBottom:'.4rem',fontFamily:'Playfair Display,serif'}}>Connect Supabase Database</h2>
+              <p style={{color:'var(--muted)',fontSize:'.85rem',lineHeight:1.6}}>Free PostgreSQL database. All devices share the same data automatically.</p>
+            </div>
+
+            <div style={{background:'var(--blue-lt)',border:'1px solid #93c5fd',borderRadius:10,padding:'1rem',marginBottom:'1.25rem',fontSize:'.82rem',color:'#1e3a8a',lineHeight:1.8}}>
+              <strong>📋 Setup steps (free, ~4 minutes):</strong><br/>
+              <span style={{color:'#374151'}}>
+                <b>1.</b> Go to <a href="https://supabase.com" target="_blank" style={{color:'var(--blue)',fontWeight:600}}>supabase.com</a> → Sign up free → New project<br/>
+                <b>2.</b> Wait ~1 min for project to start<br/>
+                <b>3.</b> Go to <strong>SQL Editor</strong> (left sidebar) → click <strong>"New query"</strong><br/>
+                <b>4.</b> Paste the SQL below and click <strong>Run ▶</strong><br/>
+                <b>5.</b> Go to <strong>Project Settings → API</strong><br/>
+                <b>6.</b> Copy <strong>Project URL</strong> and <strong>anon public</strong> key → paste below
+              </span>
+            </div>
+
+            <div style={{marginBottom:'1.25rem'}}>
+              <div style={{fontSize:'.75rem',fontWeight:600,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.05em',marginBottom:'.4rem'}}>SQL to run in Supabase editor:</div>
+              <pre style={{background:'#1a1a2e',color:'#4dd9bc',padding:'1rem',borderRadius:10,fontSize:'.75rem',fontFamily:'monospace',overflowX:'auto',lineHeight:1.6,whiteSpace:'pre-wrap'}}>{code}</pre>
+            </div>
+
+            {err&&<div className="alert alert-err">⚠️ {err}</div>}
+
+            <div className="form-group">
+              <label>Supabase Project URL</label>
+              <input placeholder="https://xxxxxxxxxxxx.supabase.co" value={sbUrl} onChange={e=>setSbUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&connect()}/>
+            </div>
+            <div className="form-group">
+              <label>Anon Public Key</label>
+              <input placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value={sbKey} onChange={e=>setSbKey(e.target.value)} onKeyDown={e=>e.key==='Enter'&&connect()}/>
+            </div>
+
+            <button className="btn btn-primary btn-lg" style={{width:'100%',justifyContent:'center'}} onClick={connect} disabled={loading}>
+              {loading
+                ?<><span className="spinner" style={{borderTopColor:'#fff',borderColor:'rgba(255,255,255,.3)'}}/>Testing connection…</>
+                :<>⚡ Connect to Supabase</>}
+            </button>
+
+            <p style={{marginTop:'1rem',fontSize:'.75rem',color:'var(--muted)',textAlign:'center',lineHeight:1.6}}>
+              🔒 Your URL and key are saved only on this device (localStorage).<br/>Share the same credentials with others to sync data across devices.
+            </p>
+          </>}
+      </div>
+      {CFG.ready()&&!success&&<div style={{marginTop:'1rem',textAlign:'center'}}>
+        <button className="btn btn-ghost btn-sm" onClick={()=>{ CFG.clear(); setSbUrl(''); setSbKey(''); setErr(''); }}>Reset connection</button>
+      </div>}
+    </div>
+  </div>;
+}
+
+/* ── ROOT ───────────────────────────────── */
+function App(){
+  const[sess,setSess]=useState(null);
+  const[appState,setAppState]=useState('checking'); // checking|setup|ready
+  const[syncTick,setSyncTick]=useState(0); // increments every sync cycle to trigger re-renders
+  const{ts,toast}=useToast();
+
+  useEffect(()=>{
+    DB.loadCache(); // instant render from cache — instant UI
+    setAppState('ready'); // always show UI immediately
+    // Connect to Supabase in background
+    DB.connect(()=>setSyncTick(t=>t+1)).then(ok=>{
+      if(!ok) toast('Supabase offline — data may not sync.','','⚠️');
+    }).catch(()=>{});
+  },[]);
+
+  const login=s=>{
+    if(s.role==='register'){setSess({role:'register'});return;}
+    setSess(s);
+  };
+  const logout=()=>{ setSess(null); toast('Logged out.','','👋'); };
+
+  return <>
+    <Toasts ts={ts}/>
+    {!sess||sess.role==='register'
+      ? sess?.role==='register'
+        ? <RegisterPage onBack={()=>setSess(null)} toast={toast}/>
+        : <LoginPage onLogin={login}/>
+      : <div className="app">
+          <nav className="navbar">
+            <div className="nav-logo">Health<span>Grid</span></div>
+            <div className="nav-right">
+              <span style={{fontSize:'.85rem',color:'rgba(255,255,255,.7)'}}>
+                {sess.role==='hadmin'?(DB.get('hospitals',[]).find(h=>h.id===sess.hid)?.name||sess.name):sess.name}
+              </span>
+              <button className="btn btn-ghost btn-sm" title="Sync now"
+                style={{color:'rgba(255,255,255,.6)',borderColor:'rgba(255,255,255,.15)',padding:'.3rem .6rem',fontSize:'.8rem'}}
+                onClick={()=>DB.load().then(()=>setSyncTick(t=>t+1))}>
+                🔄
+              </button>
+              <span className={`role-tag ${sess.role==='super'?'super':sess.role==='hadmin'?'hadmin':'user'}`}>
+                {sess.role==='super'?'Super Admin':sess.role==='hadmin'?'Hospital Admin':'Public'}
+              </span>
+              
+              <button className="btn btn-ghost btn-sm" style={{color:'rgba(255,255,255,.7)',borderColor:'rgba(255,255,255,.2)'}} onClick={logout}>
+                {sess.role==='user'?'← Exit':'Logout'}
+              </button>
+            </div>
+          </nav>
+          <div className="main">
+            {sess.role==='super'&&<SuperDash toast={toast} liveData={syncTick}/>}
+            {sess.role==='hadmin'&&<HospitalAdminDash session={sess} toast={toast} liveData={syncTick}/>}
+            {sess.role==='user'&&<UserView liveData={syncTick}/>}
+          </div>
+        </div>}
+  </>;
+}
+
+// Global error catcher — shows error instead of blank page
+window.addEventListener('error', e => {
+  const el = document.getElementById('root');
+  if(el && el.innerHTML.trim() === '') {
+    el.innerHTML = `<div style="padding:2rem;font-family:sans-serif;color:#dc2626;max-width:600px;margin:2rem auto">
+      <h2>⚠️ Startup Error</h2>
+      <p style="color:#555;margin:.5rem 0">${e.message}</p>
+      <pre style="background:#fee2e2;padding:1rem;border-radius:8px;font-size:.8rem;overflow:auto">${e.filename}:${e.lineno}</pre>
+      <button onclick="location.reload()" style="margin-top:1rem;padding:.5rem 1rem;background:#0f1f3d;color:#fff;border:none;border-radius:6px;cursor:pointer">Reload</button>
+    </div>`;
+  }
+});
+
+class ErrorBoundary extends React.Component {
+  constructor(p){ super(p); this.state={err:null}; }
+  static getDerivedStateFromError(e){ return {err:e}; }
+  render(){
+    if(this.state.err) return(
+      <div style={{padding:'2rem',fontFamily:'sans-serif',color:'#dc2626',maxWidth:600,margin:'2rem auto'}}>
+        <h2>⚠️ App Error</h2>
+        <p style={{color:'#555',margin:'.5rem 0'}}>{this.state.err.message}</p>
+        <button onClick={()=>this.setState({err:null})} style={{marginTop:'1rem',padding:'.5rem 1rem',background:'#0f1f3d',color:'#fff',border:'none',borderRadius:6,cursor:'pointer'}}>Try Again</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ErrorBoundary><App/></ErrorBoundary>
+);
+</script>
+</body>
+</html>
